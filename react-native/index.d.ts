@@ -1,5 +1,5 @@
 /**
- * Telemetry for lagr stores — rich, zero-dependency, runtime-agnostic.
+ * Telemetry for hydda stores — rich, zero-dependency, runtime-agnostic.
  *
  * One implementation shared by the SQLite engines (node/bun) and the web
  * engines. Everything is O(1) per recorded operation and bounded in memory:
@@ -607,9 +607,9 @@ declare abstract class BaseStorageManager {
  *
  * @example
  * ```typescript
- * import { Lagr } from 'lagr/react-native';
+ * import { Hydda } from 'hydda/react-native';
  *
- * const store = await Lagr.create({
+ * const store = await Hydda.create({
  *   storage: {
  *     type: 'persistence',
  *     eviction: true,
@@ -625,7 +625,7 @@ declare abstract class BaseStorageManager {
  * await store.close();
  * ```
  */
-export declare class Lagr {
+export declare class Hydda {
 	/** Configuration options for the store instance */
 	private readonly options;
 	/** Timer for automatic compaction operations */
@@ -646,14 +646,14 @@ export declare class Lagr {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 *
 	 * @param options - Configuration options for the store
-	 * @returns Promise that resolves to an initialized Lagr instance
+	 * @returns Promise that resolves to an initialized Hydda instance
 	 *
 	 * @example
 	 * ```typescript
-	 * const store = await Lagr.create({
+	 * const store = await Hydda.create({
 	 *   storage: {
 	 *     type: 'persistence',
 	 *     eviction: true,
@@ -663,14 +663,14 @@ export declare class Lagr {
 	 * });
 	 * ```
 	 */
-	static create(options?: KvStoreOptions): Promise<Lagr>;
+	static create(options?: KvStoreOptions): Promise<Hydda>;
 	private initialize;
 	/**
 	 * Registers an event listener for the specified event.
 	 *
 	 * @param event - The event name to listen for
 	 * @param listener - The callback function to execute when the event is emitted
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 *
 	 * @example
 	 * ```typescript
@@ -684,7 +684,7 @@ export declare class Lagr {
 	 *
 	 * @param event - The event name to stop listening for
 	 * @param listener - The callback function to remove
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	off<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -692,7 +692,7 @@ export declare class Lagr {
 	 *
 	 * @param event - The event name to listen for
 	 * @param listener - The callback function to execute when the event is emitted
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	addEventListener<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -700,7 +700,7 @@ export declare class Lagr {
 	 *
 	 * @param event - The event name to stop listening for
 	 * @param listener - The callback function to remove
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	removeEventListener<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -1134,7 +1134,7 @@ export declare class ReactNativeStorageManager extends BaseStorageManager {
 }
 
 export {
-	Lagr as default,
+	Hydda as default,
 	RNBatchOperation as BatchOperation,
 };
 

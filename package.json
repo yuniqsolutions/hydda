@@ -1,7 +1,7 @@
 {
-  "name": "lagr",
-  "version": "1.0.0",
-  "description": "lagr — from 'Lager': the warehouse. A tiny, universal key-value store for Node, Bun, browsers, and React Native. SQLite/IndexedDB backed, with namespaces, TTL, encryption, analytics, telemetry, and raw SQL.",
+  "name": "hydda",
+  "version": "1.0.1",
+  "description": "hydda — Swedish for \"hut\": the little cabin where your data lives. A tiny, universal key-value store for Node, Bun, browsers, and React Native. SQLite/IndexedDB backed, with namespaces, TTL, encryption, analytics, telemetry, and raw SQL.",
   "author": "Olajide Mathew Ogundare <git@yuniq.solutions>",
   "organization": "Yuniq Solutions Tech",
   "license": "MIT",
@@ -10,14 +10,14 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yuniqsolutions/lagr.git"
+    "url": "git+https://github.com/yuniqsolutions/hydda.git"
   },
   "bugs": {
-    "url": "https://github.com/yuniqsolutions/lagr/issues"
+    "url": "https://github.com/yuniqsolutions/hydda/issues"
   },
-  "homepage": "https://github.com/yuniqsolutions/lagr#readme",
+  "homepage": "https://github.com/yuniqsolutions/hydda#readme",
   "keywords": [
-    "lagr",
+    "hydda",
     "kv",
     "store",
     "database",
@@ -40,7 +40,7 @@
     "namespaces"
   ],
   "bin": {
-    "lagr": "./bin/cli.js"
+    "hydda": "./bin/cli.js"
   },
   "exports": {
     ".": {

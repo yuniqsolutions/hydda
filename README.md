@@ -1,18 +1,18 @@
-# lagr
+# hydda
 
-> **lagr** /ˈlɑːɡər/ — *from “Lager”: the warehouse (yes, the beer is named after it — beer stored to age well).* A small, sturdy KV store for every JavaScript runtime — Node, Bun, browsers, and React Native. Formerly `yq-store`.
+> **hydda** /ˈhʏdːa/ — *Swedish: hut — the little cabin where your data lives.* A small, sturdy KV store for every JavaScript runtime — Node, Bun, browsers, and React Native. Formerly `yq-store`.
 
 Zero-dependency, embedded, persistent key-value storage with the batteries most apps end up building anyway: namespaces, TTL, type-preserving values, encryption, built-in telemetry, and a full analytics toolkit for product dashboards.
 
-[![npm version](https://img.shields.io/npm/v/lagr.svg)](https://www.npmjs.com/package/lagr)
+[![npm version](https://img.shields.io/npm/v/hydda.svg)](https://www.npmjs.com/package/hydda)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D22.5-brightgreen)](https://nodejs.org/)
 
 ```typescript
-import { Lagr } from 'lagr';
+import { Hydda } from 'hydda';
 
-const store = await Lagr.create();
+const store = await Hydda.create();
 
 await store.set('user:1', { name: 'Jo', joined: new Date() }, 3600); // 1h TTL
 const user = await store.get('user:1');   // Date comes back as a Date
@@ -23,16 +23,16 @@ await store.close();
 The same class everywhere — bundlers pick the right engine automatically:
 
 ```typescript
-import { Lagr } from 'lagr';                // Node / Bun / Deno  → SQLite
-import { Lagr } from 'lagr/web';            // browsers    → IndexedDB (localStorage fallback)
-import { Lagr } from 'lagr/react-native';   // RN          → expo-sqlite & friends
-import { Analytics } from 'lagr/analytics';  // dashboards on any of the above
-import { Cacher } from 'lagr/file-adapter';  // file-based cache
+import { Hydda } from 'hydda';                // Node / Bun / Deno  → SQLite
+import { Hydda } from 'hydda/web';            // browsers    → IndexedDB (localStorage fallback)
+import { Hydda } from 'hydda/react-native';   // RN          → expo-sqlite & friends
+import { Analytics } from 'hydda/analytics';  // dashboards on any of the above
+import { Cacher } from 'hydda/file-adapter';  // file-based cache
 ```
 
-Bare `import { Lagr } from 'lagr'` also resolves per platform (`browser` / `react-native` export conditions), and the root entry additionally exposes `LagrWeb` / `LagrRN` for code that needs several platforms at once.
+Bare `import { Hydda } from 'hydda'` also resolves per platform (`browser` / `react-native` export conditions), and the root entry additionally exposes `HyddaWeb` / `HyddaRN` for code that needs several platforms at once.
 
-## Why lagr over bare SQLite/IndexedDB
+## Why hydda over bare SQLite/IndexedDB
 
 - **Namespaces as physical tables** (Node/Bun): each namespace lives in its own SQLite table behind a registry — writes are ~1.8× faster than a shared table, clearing a namespace is an O(1) `DROP TABLE`, files are ~27% smaller, and global queries merge tables lazily via SQLite's compound-select optimization.
 - **Type-preserving values on every platform**: `Date`, `Map`, `Set`, `RegExp`, `BigInt`, typed arrays, `Error` (with `cause`), `URL`, `NaN`/`Infinity`, `undefined` all round-trip. Plain JSON stays plain JSON on disk.
@@ -40,13 +40,13 @@ Bare `import { Lagr } from 'lagr'` also resolves per platform (`browser` / `reac
 - **Soft deletes**: tombstones + compaction, or hard-delete mode.
 - **Atomic everything**: `setMany` / `deleteMany` / mixed `batch()` in single transactions, plus a `createTransaction()` builder.
 - **Telemetry built in**: latency percentiles per operation, hit rates, per-namespace activity, slow-op capture, Prometheus and OTLP exporters.
-- **Analytics built in**: the primitives behind product dashboards — counters, time series, rates, breakdowns, funnels, DAU/WAU/MAU — stored in lagr itself.
-- **Safe migrations**: old databases upgrade automatically and atomically on first open; a CLI (`npx lagr migrate`) covers scripted upgrades with backups and progress logs.
+- **Analytics built in**: the primitives behind product dashboards — counters, time series, rates, breakdowns, funnels, DAU/WAU/MAU — stored in hydda itself.
+- **Safe migrations**: old databases upgrade automatically and atomically on first open; a CLI (`npx hydda migrate`) covers scripted upgrades with backups and progress logs.
 
 ## Install
 
 ```bash
-npm install lagr        # or bun add lagr
+npm install hydda        # or bun add hydda
 ```
 
 Node ≥ 22.5 (built-in `node:sqlite`) or any Bun. Browsers need IndexedDB (all evergreen). React Native needs one of `expo-sqlite`, `react-native-sqlite-storage`, or `react-native-sqlite-2`.
@@ -54,7 +54,7 @@ Node ≥ 22.5 (built-in `node:sqlite`) or any Bun. Browsers need IndexedDB (all 
 ## Core API
 
 ```typescript
-const store = await Lagr.create({
+const store = await Hydda.create({
   storage: {
     type: 'persistence',                   // or 'memory'
     persistence: { dbDir: './data', dbFileName: 'app' },
@@ -124,12 +124,12 @@ await store.getStats();          // global stats across namespaces
 
 Namespace names are arbitrary strings — case-sensitive, any characters.
 
-## Analytics (`lagr/analytics`)
+## Analytics (`hydda/analytics`)
 
-Product-dashboard primitives on top of any lagr store. Buffered writes, TTL-based retention, its own `_analytics` namespace.
+Product-dashboard primitives on top of any hydda store. Buffered writes, TTL-based retention, its own `_analytics` namespace.
 
 ```typescript
-import { Analytics } from 'lagr/analytics';
+import { Analytics } from 'hydda/analytics';
 const analytics = new Analytics(store);
 
 // record
@@ -177,7 +177,7 @@ store.telemetry.mirrorTo(analytics);     // persist op counts → day/month/year
 ## Encryption (web)
 
 ```typescript
-const store = await Lagr.create({
+const store = await Hydda.create({
   encryption: { enabled: true, key: 'password', iterations: 210_000 },
 });
 ```
@@ -222,24 +222,24 @@ raw.filename; raw.inTransaction;       // properties
 
 Connection and database state are store-owned: `PRAGMA` (use `raw.pragma(name)` for reads/diagnostics and `raw.checkpoint()` for WAL), `ATTACH`/`DETACH`, bare `VACUUM` (`VACUUM INTO` snapshots stay allowed), and manual `BEGIN`/`COMMIT`/`SAVEPOINT` (use `raw.transaction()`) are all blocked with pointers to their sanctioned doors. Not part of the API: `loadExtension`, `close()` (the connection's lifetime belongs to `store.close()`), and the bare handles `db.handle` / `statement.native` — they would bypass every guard above.
 
-lagr's internal tables (`kv_store`, `lagr_ns_*`, `lagr_namespaces`, `lagr_meta`) are unreachable through `raw` — reads, writes, and DDL against them throw `LagrRawAccessError`, and catalog queries (`sqlite_master`, `PRAGMA table_list`) omit them. The guard is a single regex per SQL string; statements then run at native driver speed. Table names starting with `lagr_` are reserved.
+hydda's internal tables (`kv_store`, `hydda_ns_*`, `hydda_namespaces`, `hydda_meta`) are unreachable through `raw` — reads, writes, and DDL against them throw `HyddaRawAccessError`, and catalog queries (`sqlite_master`, `PRAGMA table_list`) omit them. The guard is a single regex per SQL string; statements then run at native driver speed. Table names starting with `hydda_` are reserved.
 
 ## Migration## Migration
 
-Old lagr/yq-store databases upgrade **automatically and atomically** the first time the new version opens them — each namespace's rows move to their own table, the old layout is removed, and a crash mid-migration leaves the original untouched. For scripted upgrades:
+Old hydda/yq-store databases upgrade **automatically and atomically** the first time the new version opens them — each namespace's rows move to their own table, the old layout is removed, and a crash mid-migration leaves the original untouched. For scripted upgrades:
 
 ```bash
-npx lagr check ./data/app.yqs
-npx lagr migrate ./data/app.yqs --backup --verbose   # per-namespace progress + row counts
+npx hydda check ./data/app.yqs
+npx hydda migrate ./data/app.yqs --backup --verbose   # per-namespace progress + row counts
 ```
 
 ## Storage layout (Node/Bun, schema v2)
 
 ```
 kv_store                      ← default namespace (key-clustered)
-lagr_ns_<hex(name)>          ← one table per named namespace
-lagr_namespaces              ← name → table registry
-lagr_meta                       ← schema version
+hydda_ns_<hex(name)>          ← one table per named namespace
+hydda_namespaces              ← name → table registry
+hydda_meta                       ← schema version
 ```
 
 Table names are hex-encoded so any namespace string is a safe, case-sensitive identifier. Global reads (`listKeys()` with no namespace) merge tables with `UNION ALL … ORDER BY key LIMIT`, which SQLite serves by lazily merge-sorting each table's clustered primary key. Web uses one IndexedDB store with a `[namespace, key]` compound key — the same model, expressed natively.
@@ -252,11 +252,11 @@ Table names are hex-encoded so any namespace string is a safe, case-sensitive id
 
 | Import | Runtime | Backend |
 |---|---|---|
-| `lagr` | Node / Bun | `node:sqlite` / `bun:sqlite` |
-| `lagr/web` | browsers | IndexedDB, localStorage fallback |
-| `lagr/react-native` | React Native | expo-sqlite / rn-sqlite-storage / rn-sqlite-2 |
-| `lagr/analytics` | everywhere | any lagr store |
-| `lagr/file-adapter` | Node / Bun | SQLite metadata + file blobs |
+| `hydda` | Node / Bun | `node:sqlite` / `bun:sqlite` |
+| `hydda/web` | browsers | IndexedDB, localStorage fallback |
+| `hydda/react-native` | React Native | expo-sqlite / rn-sqlite-storage / rn-sqlite-2 |
+| `hydda/analytics` | everywhere | any hydda store |
+| `hydda/file-adapter` | Node / Bun | SQLite metadata + file blobs |
 
 ## License
 

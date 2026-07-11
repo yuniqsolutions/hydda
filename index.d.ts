@@ -1,5 +1,5 @@
 /**
- * Telemetry for lagr stores — rich, zero-dependency, runtime-agnostic.
+ * Telemetry for hydda stores — rich, zero-dependency, runtime-agnostic.
  *
  * One implementation shared by the SQLite engines (node/bun) and the web
  * engines. Everything is O(1) per recorded operation and bounded in memory:
@@ -854,8 +854,8 @@ export interface StorageMetrics {
  *
  * v1: single kv_store table with a namespace column (composite PK).
  * v2: table-per-namespace — kv_store holds the default namespace (key PK,
- *     no namespace column), named namespaces live in lagr_ns_<hex> tables
- *     registered in lagr_namespaces.
+ *     no namespace column), named namespaces live in hydda_ns_<hex> tables
+ *     registered in hydda_namespaces.
  */
 export declare const SCHEMA_VERSION = 2;
 /**
@@ -878,7 +878,7 @@ export interface SchemaValidationResult {
  *
  * Database surface: query (cached) / prepare / run / exec / transaction
  * (factory with .deferred/.immediate/.exclusive and savepoint nesting) /
- * serialize / checkpoint / filename / inTransaction — plus the lagr
+ * serialize / checkpoint / filename / inTransaction — plus the hydda
  * extra `tables()`. Connection lifetime belongs to the store
  * (`store.close()`), so raw has no close().
  *
@@ -890,8 +890,8 @@ export interface SchemaValidationResult {
  * - connection/database state is store-owned: PRAGMA, ATTACH/DETACH, bare
  *   VACUUM, and manual transaction keywords are blocked, each with a
  *   sanctioned door (pragma(), checkpoint(), transaction(), serialize())
- * - lagr-internal tables (`kv_store`, `lagr_ns_*`, `lagr_namespaces`,
- *   `lagr_meta`) cannot be read, written, or dropped through raw
+ * - hydda-internal tables (`kv_store`, `hydda_ns_*`, `hydda_namespaces`,
+ *   `hydda_meta`) cannot be read, written, or dropped through raw
  * - catalog queries (sqlite_master / PRAGMA table_list ...) silently omit
  *   internal tables from their results
  * - the bare Database/statement handles (bun's db.handle /
@@ -984,7 +984,7 @@ export interface RawAccess {
 	/**
 	 * bun's `db.serialize()` — a byte-for-byte snapshot of the database
 	 * (emulated with VACUUM INTO on node). Note: this is a whole-file
-	 * backup and therefore includes lagr's own tables.
+	 * backup and therefore includes hydda's own tables.
 	 */
 	serialize(): Promise<Uint8Array>;
 	/**
@@ -999,11 +999,11 @@ export interface RawAccess {
 	 * @param mode SQLite checkpoint mode (default 'PASSIVE')
 	 */
 	checkpoint(mode?: "PASSIVE" | "FULL" | "RESTART" | "TRUNCATE"): Promise<void>;
-	/** lagr extra: user tables only (internal tables omitted) */
+	/** hydda extra: user tables only (internal tables omitted) */
 	tables(): Promise<string[]>;
 }
-/** Thrown when raw SQL touches lagr-internal tables */
-export declare class LagrRawAccessError extends Error {
+/** Thrown when raw SQL touches hydda-internal tables */
+export declare class HyddaRawAccessError extends Error {
 	constructor(message: string);
 }
 /**
@@ -1059,7 +1059,7 @@ export declare function checkSchema(dbPath: string): Promise<SchemaCheckResult>;
  */
 export declare function migrate(options: MigrationOptions): Promise<MigrationResult>;
 /**
- * Find all lagr database files in a directory
+ * Find all hydda database files in a directory
  */
 export declare function findDatabases(dir: string, pattern?: string): string[];
 /**
@@ -1068,7 +1068,7 @@ export declare function findDatabases(dir: string, pattern?: string): string[];
  *
  * @example
  * ```typescript
- * const store = await Lagr.create({
+ * const store = await Hydda.create({
  *   storage: { type: 'persistence' },
  *   compactionInterval: 3600000,
  *   softDelete: true
@@ -1090,7 +1090,7 @@ export declare function findDatabases(dir: string, pattern?: string): string[];
  * await store.close();
  * ```
  */
-export declare class Lagr {
+export declare class Hydda {
 	private readonly options;
 	private readonly emitter;
 	private readonly engine;
@@ -1103,12 +1103,12 @@ export declare class Lagr {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 *
 	 * @param options - Configuration options for the store
-	 * @returns Promise that resolves to an initialized Lagr instance
+	 * @returns Promise that resolves to an initialized Hydda instance
 	 */
-	static create(options?: KvStoreOptions): Promise<Lagr>;
+	static create(options?: KvStoreOptions): Promise<Hydda>;
 	private initialize;
 	on<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	off<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
@@ -1336,7 +1336,7 @@ export declare class Lagr {
 	 * Guarded raw SQL access — one async, bun:sqlite-flavored API on every
 	 * runtime. On Bun calls route directly to bun:sqlite; on Node a thin
 	 * adapter gives node:sqlite the same shape (`raw.engine` tells which).
-	 * lagr-internal tables are unreachable, and catalog queries omit them.
+	 * hydda-internal tables are unreachable, and catalog queries omit them.
 	 *
 	 * @example
 	 * ```typescript
@@ -1358,7 +1358,7 @@ export declare class Lagr {
 	 *
 	 * @example
 	 * ```typescript
-	 * const result = await Lagr.checkSchema('/path/to/store.yqs');
+	 * const result = await Hydda.checkSchema('/path/to/store.yqs');
 	 * if (result.needsMigration) {
 	 *   console.log('Migration needed:', result.validation.missingColumns);
 	 * }
@@ -1374,7 +1374,7 @@ export declare class Lagr {
 	 * @example
 	 * ```typescript
 	 * // Basic migration with backup
-	 * const result = await Lagr.migrate({
+	 * const result = await Hydda.migrate({
 	 *   dbPath: '/path/to/store.yqs',
 	 *   backup: true,
 	 *   verbose: true
@@ -1385,7 +1385,7 @@ export declare class Lagr {
 	 * }
 	 *
 	 * // Dry run to preview changes
-	 * const preview = await Lagr.migrate({
+	 * const preview = await Hydda.migrate({
 	 *   dbPath: '/path/to/store.yqs',
 	 *   dryRun: true
 	 * });
@@ -1394,7 +1394,7 @@ export declare class Lagr {
 	 */
 	static migrate(options: MigrationOptions): Promise<MigrationResult>;
 	/**
-	 * Find all lagr database files in a directory.
+	 * Find all hydda database files in a directory.
 	 *
 	 * @param dir - Directory to search
 	 * @param pattern - Glob pattern (default: '*.yqs')
@@ -1402,11 +1402,11 @@ export declare class Lagr {
 	 *
 	 * @example
 	 * ```typescript
-	 * const databases = Lagr.findDatabases('/data/stores');
+	 * const databases = Hydda.findDatabases('/data/stores');
 	 * for (const dbPath of databases) {
-	 *   const check = await Lagr.checkSchema(dbPath);
+	 *   const check = await Hydda.checkSchema(dbPath);
 	 *   if (check.needsMigration) {
-	 *     await Lagr.migrate({ dbPath, backup: true });
+	 *     await Hydda.migrate({ dbPath, backup: true });
 	 *   }
 	 * }
 	 * ```
@@ -1499,7 +1499,7 @@ export interface EncryptionConfig {
 	iterations?: number;
 }
 /**
- * Options for creating a Lagr instance.
+ * Options for creating a Hydda instance.
  * Extends the shared KvStoreOptions with web-only settings.
  */
 export interface WebKvStoreOptions extends KvStoreOptions {
@@ -1521,7 +1521,7 @@ export interface WebKvStoreOptions extends KvStoreOptions {
 	encryption?: EncryptionConfig;
 }
 /**
- * Batch operations accepted by Lagr.batch(): the shared BatchOperation
+ * Batch operations accepted by Hydda.batch(): the shared BatchOperation
  * shape, plus the legacy web shape using `ttlSeconds`.
  */
 export type WebBatchOperation<T = unknown> = BatchOperation<T> | {
@@ -1532,10 +1532,10 @@ export type WebBatchOperation<T = unknown> = BatchOperation<T> | {
 	namespace?: string;
 };
 /**
- * List options accepted by Lagr, including legacy page-based pagination.
+ * List options accepted by Hydda, including legacy page-based pagination.
  */
 export type WebListOptions = ListOptions;
-declare class Lagr$1 {
+declare class Hydda$1 {
 	private readonly options;
 	private readonly emitter;
 	private readonly engine;
@@ -1551,9 +1551,9 @@ declare class Lagr$1 {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 */
-	static create(options?: WebKvStoreOptions): Promise<Lagr$1>;
+	static create(options?: WebKvStoreOptions): Promise<Hydda$1>;
 	private initialize;
 	/**
 	 * The storage engine in use ('indexeddb' or 'localstorage')
@@ -1773,9 +1773,9 @@ export type RNBatchOperation = RNPutBatchOperation | RNDelBatchOperation;
  *
  * @example
  * ```typescript
- * import { Lagr } from 'lagr/react-native';
+ * import { Hydda } from 'hydda/react-native';
  *
- * const store = await Lagr.create({
+ * const store = await Hydda.create({
  *   storage: {
  *     type: 'persistence',
  *     eviction: true,
@@ -1791,7 +1791,7 @@ export type RNBatchOperation = RNPutBatchOperation | RNDelBatchOperation;
  * await store.close();
  * ```
  */
-declare class Lagr$2 {
+declare class Hydda$2 {
 	/** Configuration options for the store instance */
 	private readonly options;
 	/** Timer for automatic compaction operations */
@@ -1812,14 +1812,14 @@ declare class Lagr$2 {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 *
 	 * @param options - Configuration options for the store
-	 * @returns Promise that resolves to an initialized Lagr instance
+	 * @returns Promise that resolves to an initialized Hydda instance
 	 *
 	 * @example
 	 * ```typescript
-	 * const store = await Lagr.create({
+	 * const store = await Hydda.create({
 	 *   storage: {
 	 *     type: 'persistence',
 	 *     eviction: true,
@@ -1829,14 +1829,14 @@ declare class Lagr$2 {
 	 * });
 	 * ```
 	 */
-	static create(options?: KvStoreOptions): Promise<Lagr$2>;
+	static create(options?: KvStoreOptions): Promise<Hydda$2>;
 	private initialize;
 	/**
 	 * Registers an event listener for the specified event.
 	 *
 	 * @param event - The event name to listen for
 	 * @param listener - The callback function to execute when the event is emitted
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 *
 	 * @example
 	 * ```typescript
@@ -1850,7 +1850,7 @@ declare class Lagr$2 {
 	 *
 	 * @param event - The event name to stop listening for
 	 * @param listener - The callback function to remove
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	off<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -1858,7 +1858,7 @@ declare class Lagr$2 {
 	 *
 	 * @param event - The event name to listen for
 	 * @param listener - The callback function to execute when the event is emitted
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	addEventListener<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -1866,7 +1866,7 @@ declare class Lagr$2 {
 	 *
 	 * @param event - The event name to stop listening for
 	 * @param listener - The callback function to remove
-	 * @returns This Lagr instance for method chaining
+	 * @returns This Hydda instance for method chaining
 	 */
 	removeEventListener<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	/**
@@ -2224,7 +2224,7 @@ declare class Lagr$2 {
 	private evictExpiredEntries;
 	private evictLRUIfNeeded;
 }
-/** Minimal store surface analytics needs — satisfied by every lagr store */
+/** Minimal store surface analytics needs — satisfied by every hydda store */
 export interface AnalyticsBackend {
 	set<T>(key: string, value: T, options?: {
 		ttl?: number;
@@ -2472,7 +2472,7 @@ export declare class Analytics {
 	private flushes;
 	private lastFlushAt;
 	private lastFlushError?;
-	constructor(store: AnalyticsBackend | Lagr, options?: AnalyticsOptions);
+	constructor(store: AnalyticsBackend | Hydda, options?: AnalyticsOptions);
 	private hourBucket;
 	private dayBucket;
 	private dayBucketStartMs;
@@ -2663,7 +2663,7 @@ export declare class Analytics {
 	/**
 	 * Analyze a real data namespace using entry metadata: growth per day,
 	 * TTL coverage, upcoming expirations, staleness. Requires a store with
-	 * inspect() (every lagr store has it).
+	 * inspect() (every hydda store has it).
 	 */
 	analyzeNamespace(namespace: string, options?: {
 		days?: number;
@@ -2843,7 +2843,7 @@ export declare abstract class BaseStorageEngine {
 	protected validateSchema(existingColumns: string[], schemaVersion?: number): SchemaValidationResult;
 	/**
 	 * Physical table for a namespace. The default namespace lives in
-	 * kv_store itself; named namespaces get lagr_ns_<hex(name)> tables.
+	 * kv_store itself; named namespaces get hydda_ns_<hex(name)> tables.
 	 * Hex encoding keeps identifiers injection-safe and case-sensitive
 	 * (SQLite table names are case-insensitive, namespace names are not).
 	 */
@@ -2867,7 +2867,7 @@ export declare abstract class BaseStorageEngine {
 	 */
 	protected getSchemaVersionSQL(): string;
 	/**
-	 * DDL for one kv table (kv_store or a lagr_ns_* table) plus its
+	 * DDL for one kv table (kv_store or a hydda_ns_* table) plus its
 	 * per-table maintenance indexes. Every kv table shares this shape;
 	 * key order comes from the clustered PRIMARY KEY.
 	 */
@@ -2886,8 +2886,8 @@ export declare abstract class BaseStorageEngine {
  *
  * Schema v2 — table per namespace:
  * - `kv_store` holds the default namespace (plain `key` primary key)
- * - each named namespace lives in its own `lagr_ns_<hex(name)>` table,
- *   recorded in the `lagr_namespaces` registry
+ * - each named namespace lives in its own `hydda_ns_<hex(name)>` table,
+ *   recorded in the `hydda_namespaces` registry
  * - per-namespace prepared-statement caches (SQL can't parameterize
  *   table names)
  * - global reads merge tables with UNION ALL + ORDER BY + LIMIT, which
@@ -2985,8 +2985,8 @@ export declare class BunStorageEngine extends BaseStorageEngine {
  *
  * Schema v2 — table per namespace:
  * - `kv_store` holds the default namespace (plain `key` primary key)
- * - each named namespace lives in its own `lagr_ns_<hex(name)>` table,
- *   recorded in the `lagr_namespaces` registry
+ * - each named namespace lives in its own `hydda_ns_<hex(name)>` table,
+ *   recorded in the `hydda_namespaces` registry
  * - per-namespace prepared-statement caches (SQL can't parameterize
  *   table names)
  * - global reads merge tables with UNION ALL + ORDER BY + LIMIT, which
@@ -3093,9 +3093,9 @@ export type StorageEngineType = "bun" | "node" | "auto";
 export declare function createStorageEngineOfType(type: StorageEngineType, config: StorageEngineConfig, emitter: TypedEventEmitter<KvStoreEvents>): BaseStorageEngine;
 
 export {
-	Lagr as default,
-	Lagr$1 as LagrWeb,
-	Lagr$2 as LagrRN,
+	Hydda as default,
+	Hydda$1 as HyddaWeb,
+	Hydda$2 as HyddaRN,
 };
 
 export {};

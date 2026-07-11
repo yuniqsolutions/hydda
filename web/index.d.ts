@@ -1,5 +1,5 @@
 /**
- * Telemetry for lagr stores — rich, zero-dependency, runtime-agnostic.
+ * Telemetry for hydda stores — rich, zero-dependency, runtime-agnostic.
  *
  * One implementation shared by the SQLite engines (node/bun) and the web
  * engines. Everything is O(1) per recorded operation and bounded in memory:
@@ -884,7 +884,7 @@ export interface EncryptionConfig {
 	iterations?: number;
 }
 /**
- * Options for creating a Lagr instance.
+ * Options for creating a Hydda instance.
  * Extends the shared KvStoreOptions with web-only settings.
  */
 export interface WebKvStoreOptions extends KvStoreOptions {
@@ -1005,7 +1005,7 @@ export interface WebStorageEngine {
 	resetMetrics(): void;
 }
 /**
- * Batch operations accepted by Lagr.batch(): the shared BatchOperation
+ * Batch operations accepted by Hydda.batch(): the shared BatchOperation
  * shape, plus the legacy web shape using `ttlSeconds`.
  */
 export type WebBatchOperation<T = unknown> = BatchOperation<T> | {
@@ -1016,10 +1016,10 @@ export type WebBatchOperation<T = unknown> = BatchOperation<T> | {
 	namespace?: string;
 };
 /**
- * List options accepted by Lagr, including legacy page-based pagination.
+ * List options accepted by Hydda, including legacy page-based pagination.
  */
 export type WebListOptions = ListOptions;
-export declare class Lagr {
+export declare class Hydda {
 	private readonly options;
 	private readonly emitter;
 	private readonly engine;
@@ -1035,9 +1035,9 @@ export declare class Lagr {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 */
-	static create(options?: WebKvStoreOptions): Promise<Lagr>;
+	static create(options?: WebKvStoreOptions): Promise<Hydda>;
 	private initialize;
 	/**
 	 * The storage engine in use ('indexeddb' or 'localstorage')
@@ -1371,7 +1371,7 @@ export declare function isEngineAvailable(engine: WebEngineType): boolean;
  */
 export declare function createWebEngine(type: WebEngineType, config: WebEngineConfig, emitter: TypedEventEmitter<KvStoreEvents>): WebStorageEngine;
 /**
- * Universal JavaScript value serializer shared by every Lagr store.
+ * Universal JavaScript value serializer shared by every Hydda store.
  *
  * Produces a plain string representation that round-trips rich types
  * (Date, Map, Set, RegExp, BigInt, typed arrays, Error, URL, NaN/Infinity,
@@ -1390,7 +1390,7 @@ export declare function serialize<T>(value: T): string;
  */
 export declare function deserialize<T>(serialized: string): T;
 /**
- * Cryptography utilities for the Lagr web adapter.
+ * Cryptography utilities for the Hydda web adapter.
  * AES-GCM encryption with PBKDF2 key derivation via the Web Crypto API.
  */
 /**
@@ -1435,7 +1435,7 @@ export declare class CryptoManager {
 }
 
 export {
-	Lagr as default,
+	Hydda as default,
 };
 
 export {};

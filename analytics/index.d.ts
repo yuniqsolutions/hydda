@@ -1,5 +1,5 @@
 /**
- * Telemetry for lagr stores — rich, zero-dependency, runtime-agnostic.
+ * Telemetry for hydda stores — rich, zero-dependency, runtime-agnostic.
  *
  * One implementation shared by the SQLite engines (node/bun) and the web
  * engines. Everything is O(1) per recorded operation and bounded in memory:
@@ -818,7 +818,7 @@ export interface SchemaValidationResult {
  *
  * Database surface: query (cached) / prepare / run / exec / transaction
  * (factory with .deferred/.immediate/.exclusive and savepoint nesting) /
- * serialize / checkpoint / filename / inTransaction — plus the lagr
+ * serialize / checkpoint / filename / inTransaction — plus the hydda
  * extra `tables()`. Connection lifetime belongs to the store
  * (`store.close()`), so raw has no close().
  *
@@ -830,8 +830,8 @@ export interface SchemaValidationResult {
  * - connection/database state is store-owned: PRAGMA, ATTACH/DETACH, bare
  *   VACUUM, and manual transaction keywords are blocked, each with a
  *   sanctioned door (pragma(), checkpoint(), transaction(), serialize())
- * - lagr-internal tables (`kv_store`, `lagr_ns_*`, `lagr_namespaces`,
- *   `lagr_meta`) cannot be read, written, or dropped through raw
+ * - hydda-internal tables (`kv_store`, `hydda_ns_*`, `hydda_namespaces`,
+ *   `hydda_meta`) cannot be read, written, or dropped through raw
  * - catalog queries (sqlite_master / PRAGMA table_list ...) silently omit
  *   internal tables from their results
  * - the bare Database/statement handles (bun's db.handle /
@@ -924,7 +924,7 @@ export interface RawAccess {
 	/**
 	 * bun's `db.serialize()` — a byte-for-byte snapshot of the database
 	 * (emulated with VACUUM INTO on node). Note: this is a whole-file
-	 * backup and therefore includes lagr's own tables.
+	 * backup and therefore includes hydda's own tables.
 	 */
 	serialize(): Promise<Uint8Array>;
 	/**
@@ -939,7 +939,7 @@ export interface RawAccess {
 	 * @param mode SQLite checkpoint mode (default 'PASSIVE')
 	 */
 	checkpoint(mode?: "PASSIVE" | "FULL" | "RESTART" | "TRUNCATE"): Promise<void>;
-	/** lagr extra: user tables only (internal tables omitted) */
+	/** hydda extra: user tables only (internal tables omitted) */
 	tables(): Promise<string[]>;
 }
 /**
@@ -986,7 +986,7 @@ export interface SchemaCheckResult {
 	dbPath: string;
 	exists: boolean;
 }
-declare class Lagr {
+declare class Hydda {
 	private readonly options;
 	private readonly emitter;
 	private readonly engine;
@@ -999,12 +999,12 @@ declare class Lagr {
 	private dbName;
 	private constructor();
 	/**
-	 * Creates and initializes a new Lagr instance.
+	 * Creates and initializes a new Hydda instance.
 	 *
 	 * @param options - Configuration options for the store
-	 * @returns Promise that resolves to an initialized Lagr instance
+	 * @returns Promise that resolves to an initialized Hydda instance
 	 */
-	static create(options?: KvStoreOptions): Promise<Lagr>;
+	static create(options?: KvStoreOptions): Promise<Hydda>;
 	private initialize;
 	on<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
 	off<E extends keyof KvStoreEvents>(event: E, listener: KvStoreEvents[E]): this;
@@ -1232,7 +1232,7 @@ declare class Lagr {
 	 * Guarded raw SQL access — one async, bun:sqlite-flavored API on every
 	 * runtime. On Bun calls route directly to bun:sqlite; on Node a thin
 	 * adapter gives node:sqlite the same shape (`raw.engine` tells which).
-	 * lagr-internal tables are unreachable, and catalog queries omit them.
+	 * hydda-internal tables are unreachable, and catalog queries omit them.
 	 *
 	 * @example
 	 * ```typescript
@@ -1254,7 +1254,7 @@ declare class Lagr {
 	 *
 	 * @example
 	 * ```typescript
-	 * const result = await Lagr.checkSchema('/path/to/store.yqs');
+	 * const result = await Hydda.checkSchema('/path/to/store.yqs');
 	 * if (result.needsMigration) {
 	 *   console.log('Migration needed:', result.validation.missingColumns);
 	 * }
@@ -1270,7 +1270,7 @@ declare class Lagr {
 	 * @example
 	 * ```typescript
 	 * // Basic migration with backup
-	 * const result = await Lagr.migrate({
+	 * const result = await Hydda.migrate({
 	 *   dbPath: '/path/to/store.yqs',
 	 *   backup: true,
 	 *   verbose: true
@@ -1281,7 +1281,7 @@ declare class Lagr {
 	 * }
 	 *
 	 * // Dry run to preview changes
-	 * const preview = await Lagr.migrate({
+	 * const preview = await Hydda.migrate({
 	 *   dbPath: '/path/to/store.yqs',
 	 *   dryRun: true
 	 * });
@@ -1290,7 +1290,7 @@ declare class Lagr {
 	 */
 	static migrate(options: MigrationOptions): Promise<MigrationResult>;
 	/**
-	 * Find all lagr database files in a directory.
+	 * Find all hydda database files in a directory.
 	 *
 	 * @param dir - Directory to search
 	 * @param pattern - Glob pattern (default: '*.yqs')
@@ -1298,18 +1298,18 @@ declare class Lagr {
 	 *
 	 * @example
 	 * ```typescript
-	 * const databases = Lagr.findDatabases('/data/stores');
+	 * const databases = Hydda.findDatabases('/data/stores');
 	 * for (const dbPath of databases) {
-	 *   const check = await Lagr.checkSchema(dbPath);
+	 *   const check = await Hydda.checkSchema(dbPath);
 	 *   if (check.needsMigration) {
-	 *     await Lagr.migrate({ dbPath, backup: true });
+	 *     await Hydda.migrate({ dbPath, backup: true });
 	 *   }
 	 * }
 	 * ```
 	 */
 	static findDatabases(dir: string, pattern?: string): string[];
 }
-/** Minimal store surface analytics needs — satisfied by every lagr store */
+/** Minimal store surface analytics needs — satisfied by every hydda store */
 export interface AnalyticsBackend {
 	set<T>(key: string, value: T, options?: {
 		ttl?: number;
@@ -1557,7 +1557,7 @@ export declare class Analytics {
 	private flushes;
 	private lastFlushAt;
 	private lastFlushError?;
-	constructor(store: AnalyticsBackend | Lagr, options?: AnalyticsOptions);
+	constructor(store: AnalyticsBackend | Hydda, options?: AnalyticsOptions);
 	private hourBucket;
 	private dayBucket;
 	private dayBucketStartMs;
@@ -1748,7 +1748,7 @@ export declare class Analytics {
 	/**
 	 * Analyze a real data namespace using entry metadata: growth per day,
 	 * TTL coverage, upcoming expirations, staleness. Requires a store with
-	 * inspect() (every lagr store has it).
+	 * inspect() (every hydda store has it).
 	 */
 	analyzeNamespace(namespace: string, options?: {
 		days?: number;

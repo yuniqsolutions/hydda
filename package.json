@@ -1,0 +1,113 @@
+{
+  "name": "lagr",
+  "version": "1.0.0",
+  "description": "lagr — from 'Lager': the warehouse. A tiny, universal key-value store for Node, Bun, browsers, and React Native. SQLite/IndexedDB backed, with namespaces, TTL, encryption, analytics, telemetry, and raw SQL.",
+  "author": "Olajide Mathew Ogundare <git@yuniq.solutions>",
+  "organization": "Yuniq Solutions Tech",
+  "license": "MIT",
+  "types": "./index.d.ts",
+  "main": "./index.js",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yuniqsolutions/lagr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yuniqsolutions/lagr/issues"
+  },
+  "homepage": "https://github.com/yuniqsolutions/lagr#readme",
+  "keywords": [
+    "lagr",
+    "kv",
+    "store",
+    "database",
+    "key-value",
+    "persistent",
+    "cache",
+    "fast",
+    "low-memory",
+    "embedded",
+    "nodejs",
+    "typescript",
+    "jsonl",
+    "append-only",
+    "universal",
+    "indexeddb",
+    "react-native",
+    "bun",
+    "encryption",
+    "ttl",
+    "namespaces"
+  ],
+  "bin": {
+    "lagr": "./bin/cli.js"
+  },
+  "exports": {
+    ".": {
+      "react-native": {
+        "types": "./react-native/index.d.ts",
+        "default": "./react-native/index.js"
+      },
+      "browser": {
+        "types": "./web/index.d.ts",
+        "default": "./web/index.js"
+      },
+      "import": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      },
+      "require": {
+        "types": "./index.d.ts",
+        "default": "./index.cjs"
+      }
+    },
+    "./web": {
+      "import": {
+        "types": "./web/index.d.ts",
+        "default": "./web/index.js"
+      },
+      "require": {
+        "types": "./web/index.d.ts",
+        "default": "./web/index.cjs"
+      }
+    },
+    "./react-native": {
+      "import": {
+        "types": "./react-native/index.d.ts",
+        "default": "./react-native/index.js"
+      },
+      "require": {
+        "types": "./react-native/index.d.ts",
+        "default": "./react-native/index.cjs"
+      }
+    },
+    "./file-adapter": {
+      "import": {
+        "types": "./file-adapter/index.d.ts",
+        "default": "./file-adapter/index.js"
+      },
+      "require": {
+        "types": "./file-adapter/index.d.ts",
+        "default": "./file-adapter/index.cjs"
+      }
+    },
+    "./analytics": {
+      "import": {
+        "types": "./analytics/index.d.ts",
+        "default": "./analytics/index.js"
+      },
+      "require": {
+        "types": "./analytics/index.d.ts",
+        "default": "./analytics/index.cjs"
+      }
+    }
+  },
+  "scripts": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {},
+  "browser": "./web/index.js",
+  "react-native": "./react-native/index.js"
+}

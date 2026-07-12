@@ -459,6 +459,14 @@ export interface KvStoreOptions {
 	 */
 	telemetry?: TelemetryOptions | false;
 	/**
+	 * Silence node:sqlite's one-time ExperimentalWarning for this process via
+	 * a narrow, delegating process.emitWarning filter (all other warnings pass
+	 * through; no listeners are removed). Off by default: a library must not
+	 * alter global warning behavior unless the application asks it to.
+	 * Node.js only; ignored on Bun.
+	 */
+	suppressSQLiteWarning?: boolean;
+	/**
 	 * Keep the Node.js process alive while the store is open.
 	 *
 	 * When `false` (default), internal timers (compaction, eviction, LRU updates)

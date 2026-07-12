@@ -1,6 +1,6 @@
 {
   "name": "hydda",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "hydda — Swedish for \"hut\": the little cabin where your data lives. A tiny, universal key-value store for Node, Bun, browsers, and React Native. SQLite/IndexedDB backed, with namespaces, TTL, encryption, analytics, telemetry, and raw SQL.",
   "author": "Olajide Mathew Ogundare <git@yuniq.solutions>",
   "organization": "Yuniq Solutions Tech",

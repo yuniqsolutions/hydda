@@ -63,6 +63,11 @@ const store = await Hydda.create({
   ttl: 0,                                  // default TTL in seconds (0 = none)
   softDelete: true,
   telemetry: { slowOpThresholdMs: 100 },   // or false to disable
+  suppressSQLiteWarning: true,             // opt-in: silence node:sqlite's one-time
+                                           // ExperimentalWarning via a narrow filter that
+                                           // forwards all other warnings untouched. Off by
+                                           // default — hydda never mutates process warning
+                                           // behavior unless your app asks (Electron-safe).
 });
 
 // CRUD
